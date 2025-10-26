@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9.6'   // Use the name configured in Jenkins Global Tools
+        jdk 'jdk17'           // Optional, if you configured a JDK tool
+    }
+
+    triggers {
+        githubPush()          // Trigger build when GitHub push happens (via webhook)
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/<your-username>/jenkins-maven-demo.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build succeeded!'
+        }
+        failure {
+            echo '❌ Build failed!'
+        }
+    }
+}
